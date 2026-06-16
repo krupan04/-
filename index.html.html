@@ -1,0 +1,357 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>เกมฝึกพิมพ์ภาษาไทย (Pro)</title>
+
+<style>
+body{
+    font-family: Arial;
+    margin:0;
+    text-align:center;
+    background: linear-gradient(135deg,#ffdee9,#b5fffc,#fff6a9);
+}
+
+*{box-sizing:border-box;}
+
+h1{color:#ff4081;}
+
+.teacher{
+    background:#fff;
+    margin:10px auto;
+    padding:10px;
+    width:95%;
+    max-width:900px;
+    border-radius:12px;
+}
+
+/* BOX */
+.box{
+    background:white;
+    width:95%;
+    max-width:600px;
+    margin:20px auto;
+    padding:20px;
+    border-radius:15px;
+    box-shadow:0 5px 15px rgba(0,0,0,0.2);
+}
+
+input{
+    width:90%;
+    padding:10px;
+    font-size:18px;
+    border-radius:10px;
+    border:1px solid #ccc;
+}
+
+/* BUTTON */
+.btn{
+    width:100%;
+    padding:12px;
+    margin:8px 0;
+    border:none;
+    border-radius:10px;
+    font-size:16px;
+    font-weight:bold;
+    cursor:pointer;
+}
+
+.l1{background:#a8e6cf;}
+.l2{background:#dcedc1;}
+.l3{background:#ffd3b6;}
+.l4{background:#ffaaa5;}
+
+/* GAME */
+#game{
+    display:none;
+    background:white;
+    width:95%;
+    max-width:900px;
+    margin:10px auto;
+    padding:15px;
+    border-radius:15px;
+    box-shadow:0 5px 20px rgba(0,0,0,0.2);
+}
+
+#word{
+    font-size:60px;
+    margin:10px;
+}
+
+.stats{
+    font-size:16px;
+    margin:10px;
+}
+
+/* KEYBOARD */
+.keyboard{
+    margin-top:10px;
+}
+
+.row{
+    display:flex;
+    justify-content:center;
+    flex-wrap:wrap;
+    gap:4px;
+}
+
+.key{
+    width:40px;
+    height:40px;
+    background:#eee;
+    display:flex;
+    align-items:center;
+    justify-content:center;
+    border-radius:6px;
+    cursor:pointer;
+}
+
+.enter{background:#4caf50;color:white;width:100px;}
+.back{background:#ff8a80;width:60px;}
+.space{background:#c5cae9;width:150px;}
+
+button{
+    margin-top:8px;
+    padding:10px 15px;
+    border:none;
+    border-radius:10px;
+    cursor:pointer;
+    background:#ff4081;
+    color:white;
+}
+</style>
+</head>
+
+<body>
+
+<h1>🎮 เกมฝึกพิมพ์ภาษาไทย (PRO)</h1>
+
+<div class="teacher">
+👩‍🏫 ครูวิภาพร ป้อมกระโทก | โรงเรียนวัดเกาะสุวรรณาราม
+</div>
+
+<!-- LOGIN -->
+<div id="login" class="box">
+<h2>👤 ลงชื่อเข้าใช้</h2>
+<input id="name" placeholder="พิมพ์ชื่อผู้เรียน">
+<br><br>
+<button class="btn l1" onclick="enter()">เข้าเกม</button>
+</div>
+
+<!-- LEVEL -->
+<div id="menu" class="box" style="display:none;">
+<h2>📚 เลือกระดับ</h2>
+
+<button class="btn l1" onclick="start(1)">🟢 พยัญชนะ</button>
+<button class="btn l2" onclick="start(2)">🔵 สระ</button>
+<button class="btn l3" onclick="start(3)">🟣 คำประสม</button>
+<button class="btn l4" onclick="start(4)">🔴 คำศัพท์</button>
+</div>
+
+<!-- GAME -->
+<div id="game">
+
+<div class="stats">
+👤 <span id="player"></span><br>
+⭐ คะแนน: <span id="score">0</span>
+🏆 ดาว: <span id="star">0</span><br>
+⏱️ เวลา: <span id="time">120</span> วิ
+</div>
+
+<div id="word">ก</div>
+
+<input id="inputBox">
+
+<br>
+
+<button onclick="check()">📩 ส่ง</button>
+<button onclick="undo()">🔙 ย้อน</button>
+
+<p id="result"></p>
+
+<div class="keyboard" id="keyboard"></div>
+
+</div>
+
+<script>
+
+let player="";
+let mode=1;
+let word="";
+
+let score=0;
+let star=0;
+
+let total=0;
+let correct=0;
+
+let time=120;
+let timer;
+
+let history=[];
+
+const data={
+1:["ก","ข","ค","ง","จ","ฉ","ช","ซ","ด","ต","น","บ","ป","พ","ม","ย","ร","ล","ว","ส","ห"],
+2:["า","ิ","ี","ึ","ื","ุ","ู","ะ","ั","ำ","เ","แ","โ","ใ","ไ"],
+3:["กะ","กา","กิ","กี","กุ","กู","มา","นา","ดี","ปลา"],
+4:["แมว","ปลา","บ้าน","ครู","โรงเรียน","หนังสือ"]
+};
+
+/* LOGIN */
+function enter(){
+    let n=document.getElementById("name").value;
+    if(n===""){alert("กรุณากรอกชื่อ");return;}
+
+    player=n;
+
+    document.getElementById("login").style.display="none";
+    document.getElementById("menu").style.display="block";
+}
+
+/* START */
+function start(m){
+    mode=m;
+
+    score=0;
+    star=0;
+    total=0;
+    correct=0;
+    history=[];
+    time=120;
+
+    document.getElementById("menu").style.display="none";
+    document.getElementById("game").style.display="block";
+
+    document.getElementById("player").innerText=player;
+
+    update();
+    next();
+    build();
+    startTimer();
+}
+
+/* TIMER */
+function startTimer(){
+    clearInterval(timer);
+
+    timer=setInterval(()=>{
+        time--;
+        document.getElementById("time").innerText=time;
+
+        if(time<=0){
+            clearInterval(timer);
+            endGame();
+        }
+    },1000);
+}
+
+/* NEXT */
+function next(){
+    history.push(word);
+
+    let arr=data[mode];
+    word=arr[Math.floor(Math.random()*arr.length)];
+
+    document.getElementById("word").innerText=word;
+    document.getElementById("inputBox").value="";
+    document.getElementById("result").innerText="";
+}
+
+/* CHECK */
+function check(){
+    let v=document.getElementById("inputBox").value;
+    total++;
+
+    if(v===word){
+        score+=10;
+        correct++;
+        if(score%50===0) star++;
+
+        update();
+        document.getElementById("result").innerText="✔ ถูกต้อง +10";
+
+        setTimeout(next,400);
+    }else{
+        document.getElementById("result").innerText="ลองใหม่ 😊";
+    }
+}
+
+/* UPDATE */
+function update(){
+    document.getElementById("score").innerText=score;
+    document.getElementById("star").innerText=star;
+}
+
+/* UNDO */
+function undo(){
+    if(history.length>1){
+        history.pop();
+        word=history[history.length-1];
+        document.getElementById("word").innerText=word;
+        document.getElementById("inputBox").value="";
+    }
+}
+
+/* END GAME */
+function endGame(){
+    document.getElementById("game").innerHTML=`
+        <h2>⏱️ หมดเวลา!</h2>
+        <p>👤 ${player}</p>
+        <p>⭐ คะแนน: ${score}</p>
+        <p>🏆 ดาว: ${star}</p>
+        <p>🎯 ถูก: ${correct}/${total}</p>
+        <br>
+        <button onclick="location.reload()">🔄 เล่นใหม่</button>
+    `;
+}
+
+/* KEYBOARD */
+function build(){
+    const keys=[
+        ["ก","ข","ค","ง","จ","ฉ","ช","ซ"],
+        ["า","ิ","ี","ึ","ื","ุ","ู"],
+        ["ะ","ั","ำ","เ","แ","โ","ใ","ไ"],
+        ["⌫","space","ENTER"]
+    ];
+
+    let box=document.getElementById("keyboard");
+    box.innerHTML="";
+
+    keys.forEach(r=>{
+        let row=document.createElement("div");
+        row.className="row";
+
+        r.forEach(k=>{
+            let b=document.createElement("div");
+            b.className="key";
+
+            if(k==="⌫"){b.innerText="⌫";b.classList.add("back");b.onclick=del;}
+            else if(k==="space"){b.innerText="space";b.classList.add("space");b.onclick=()=>press(" ");}
+            else if(k==="ENTER"){b.innerText="ENTER";b.classList.add("enter");b.onclick=check;}
+            else{b.innerText=k;b.onclick=()=>press(k);}
+
+            row.appendChild(b);
+        });
+
+        box.appendChild(row);
+    });
+}
+
+function press(k){
+    document.getElementById("inputBox").value+=k;
+}
+
+function del(){
+    let v=document.getElementById("inputBox").value;
+    document.getElementById("inputBox").value=v.slice(0,-1);
+}
+
+document.addEventListener("keydown",e=>{
+    if(e.key==="Enter") check();
+});
+
+</script>
+
+</body>
+</html>
